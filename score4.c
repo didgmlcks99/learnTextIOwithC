@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 typedef struct{
     char name[20];
@@ -90,6 +91,8 @@ int selectMenu(){
     printf("2. 추가\n");
     printf("3. 수정\n");
     printf("4. 삭제\n");
+    printf("5. 저장\n");
+    printf("6. 이름으로 검색\n");
     printf("0. 종료\n\n");
     printf("=> 원하는 메뉴는? ");
     scanf("%d", &menu);
@@ -97,7 +100,7 @@ int selectMenu(){
 }
 
 void listScore(Score *s, int index){
-    printf("no\tName\tKor\tEng\tMath\tSum\tAvg\n");
+    printf("No\tName\tKor\tEng\tMath\tSum\tAvg\n");
     printf("===============================================================\n");
     for(int i=0; i<index; i++){
         if(s[i].flag == 0) continue;
@@ -114,6 +117,60 @@ int selectDataNo(Score *s, int index){
     return no;
 }
 
+void saveData(Score *s, int index){
+    FILE *fp;
+    fp = fopen("score.txt", "wt");
+    for(int i=0; i<index; i++){
+        if(s[i].flag == 0) continue;
+        fprintf(fp, "%s %d %d %d\n", s[i].name, s[i].score[0], s[i].score[1], s[i].score[2]);
+    }
+    fclose(fp);
+    printf("=> 저장됨! \n");
+}
+
+int loadData(Score *s){
+    int count = 0;
+    FILE *fp;
+    fp = fopen("score.txt", "rt");
+    for(int i=0; i<100; i++){
+        fscanf(fp, "%s", s[i].name);
+        if(feof(fp)) break;
+        fscanf(fp, "%d", &s[i].score[0]);
+        fscanf(fp, "%d", &s[i].score[1]);
+        fscanf(fp, "%d", &s[i].score[2]);
+        s[i].flag = 1;
+
+        s[i].sum = s[i].score[0] + s[i].score[1] + s[i].score[2];
+        s[i].avg = ((float)s[i].sum/3);
+
+        count++;
+    }
+    fclose(fp);
+    printf("=> 로딩 성공!\n");
+    return count;
+}
+
+void searchName(Score *s, int index){
+    int scnt = 0;
+    char search[20];
+
+    printf("검색할 이름? ");
+    scanf("%s", search);
+
+    printf("No\tName\tKor\tEng\tMath\tSum\tAvg\n");
+    printf("===============================================================\n");
+
+    for(int i=0; i<index; i++){
+        if(s[i].flag == 0) continue;
+        if(strstr(s[i].name, search)){
+            printf("%d\t", i+1);
+            readScore(s[i]);
+            scnt++;
+        }
+    }
+    if(scnt == 0) printf("=> 검색된 데이터 없음!\n");
+}
+
 int main(void){
     Score s[100];
     int index = 0;
@@ -121,6 +178,9 @@ int main(void){
         s[i].flag = 0;
     }
     int count = 0, menu;
+
+    count = loadData(s);
+    index = count;
  
     while (1){
         menu = selectMenu();
@@ -131,15 +191,13 @@ int main(void){
             }else{
                 printf("=> 조회 할 데이터가 없습니다.\n");
             }
-        }
-        else if (menu == 2){
+        }else if (menu == 2){
             if(count<20){
                 count += addScore(&s[index++]);
             }else{
                 printf("=> 20명의 학생 제한이 있어 더 추가 할 수 없스니다.\n");
             }
-        }
-        else if (menu == 3){
+        }else if (menu == 3){
             if(count > 0){
                 int no = selectDataNo(s, index);
                 if(no > 0){
@@ -150,8 +208,7 @@ int main(void){
             }else{
                 printf("=> 수정 할 데이터가 없습니다.\n");
             }
-        }
-        else if (menu == 4){
+        }else if (menu == 4){
             if(count > 0){
                 int no = selectDataNo(s, index);
                 if(no > 0){
@@ -170,6 +227,10 @@ int main(void){
             }else{
                 printf("=> 삭제할 데이터가 없습니다.\n");
             }
+        }else if(menu == 5){
+            saveData(s, index);
+        }else if(menu == 6){
+            searchName(s, index);
         }
     }
     printf("종료됨!\n");
