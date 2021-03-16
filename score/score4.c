@@ -112,7 +112,7 @@ void listScore(Score *s, int index){
 int selectDataNo(Score *s, int index){
     int no;
     listScore(s, index);
-    printf("번호는(취소:0) ");
+    printf("\n번호는(취소:0) ");
     scanf("%d", &no);
     return no;
 }
@@ -132,6 +132,10 @@ int loadData(Score *s){
     int count = 0;
     FILE *fp;
     fp = fopen("score.txt", "rt");
+    if(fp == NULL){
+        printf("=> 파일 없음\n");
+        return 0;
+    }
     for(int i=0; i<100; i++){
         fscanf(fp, "%s", s[i].name);
         if(feof(fp)) break;
