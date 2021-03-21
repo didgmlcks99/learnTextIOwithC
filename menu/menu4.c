@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 typedef struct{
     char name[20];
@@ -84,6 +85,8 @@ int selectMenu(){
     printf("2. 메뉴추가\n");
     printf("3. 메뉴수정\n");
     printf("4. 메뉴삭제\n");
+    printf("5. 메뉴저장\n");
+    printf("6. 메뉴명으로 검색\n");
     printf("0. 종료\n\n");
     printf("=> 원하는 메뉴는? ");
     scanf("%d", &menu);
@@ -107,6 +110,60 @@ int selectDataNo(Menu *m, int index){
     return no;
 }
 
+void saveData(Menu *m, int index){
+    FILE *fp;
+    fp = fopen("menu.txt", "wt");
+    for(int i=0; i<index; i++){
+        if(m[i].flag == 0) continue;
+        fprintf(fp, "%d %c %s\n",m[i].price, m[i].type, m[i].name);
+    }
+    fclose(fp);
+    printf("=> 저장됨! \n");
+}
+
+int loadData(Menu *m){
+    int count = 0;
+    FILE *fp;
+    fp = fopen("menu.txt", "rt");
+    if(fp == NULL){
+        printf("=> 파일 없음\n");
+        return 0;
+    }
+    for(int i=0; i<100; i++){
+        fscanf(fp, "%d", &m[i].price);
+        if(feof(fp)) break;
+        fscanf(fp, "%c", &m[i].type);
+        fscanf(fp, "%[^\n]s", m[i].name);
+
+        m[i].flag = 1;
+
+        count++;
+    }
+    fclose(fp);
+    printf("=> 로딩 성공!\n");
+    return count;
+}
+
+void searchName(Menu *m, int index){
+    int scnt = 0;
+    char search[20];
+
+    printf("검색할 이름? ");
+    scanf("%s", search);
+
+    printf("**********************\n");
+
+    for(int i=0; i<index; i++){
+        if(m[i].flag == 0) continue;
+        if(strstr(m[i].name, search)){
+            printf("%d\t", i+1);
+            readMenu(m[i]);
+            scnt++;
+        }
+    }
+    if(scnt == 0) printf("=> 검색된 데이터 없음!\n");
+}
+
 int main(void){
     Menu m[100];
     int index = 0;
@@ -114,6 +171,9 @@ int main(void){
         m[i].flag = 0;
     }
     int count = 0, menu;
+
+    count = loadData(m);
+    index = count;
  
     while (1){
         menu = selectMenu();
@@ -163,6 +223,10 @@ int main(void){
             }else{
                 printf("삭제할 데이터가 없습니다.\n");
             }
+        }else if(menu == 5){
+            saveData(m, index);
+        }else if(menu == 6){
+            searchName(m, index);
         }
     }
     printf("종료됨!\n");
